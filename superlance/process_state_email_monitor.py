@@ -16,6 +16,7 @@ import os
 import sys
 import smtplib
 import copy
+import socket
 # Using old reference for Python 2.4
 from email.MIMEText import MIMEText
 # from email.mime.text import MIMEText
@@ -82,7 +83,7 @@ class ProcessStateEmailMonitor(ProcessStateMonitor):
 
         self.from_email = kwargs['from_email']
         self.to_emails = kwargs['to_emails']
-        self.subject = kwargs.get('subject')
+        self.subject = kwargs.get('subject') + str(socket.gethostname())
         self.smtp_host = kwargs.get('smtp_host', 'localhost')
         self.digest_len = 76
 
@@ -125,6 +126,8 @@ From: %(from)s\nSubject: %(subject)s\nBody:\n%(body)s\n" % email_for_log)
     def send_smtp(self, mime_msg, to_emails):
         s = smtplib.SMTP(self.smtp_host)
         try:
+            s.starttls()
+            s.login("USERNAME", "PASSWORD")
             s.sendmail(mime_msg['From'], to_emails, mime_msg.as_string())
         except:
             s.quit()
